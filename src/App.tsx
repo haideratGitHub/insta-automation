@@ -7,13 +7,15 @@ import { useSync } from "./hooks/useSync";
 import CarouselStudio from "./components/CarouselStudio";
 import SyncControl from "./components/SyncControl";
 import CalendarView from "./views/CalendarView";
+import IdeasView from "./views/IdeasView";
 import HooksView from "./views/HooksView";
 import LeadMagnetsView from "./views/LeadMagnetsView";
 
-type View = "calendar" | "hooks" | "carousels" | "leadmagnets";
+type View = "calendar" | "ideas" | "hooks" | "carousels" | "leadmagnets";
 
 const TABS: { id: View; label: string }[] = [
   { id: "calendar", label: "Calendar" },
+  { id: "ideas", label: "Ideas" },
   { id: "hooks", label: "Hooks" },
   { id: "carousels", label: "Carousels" },
   { id: "leadmagnets", label: "Lead magnets" },
@@ -114,6 +116,13 @@ export default function App() {
       <main className="flex min-h-0 flex-1">
         {view === "calendar" && (
           <CalendarView
+            growth={state.growth}
+            setGrowth={setGrowth}
+            onCreateCarousel={createCarouselFromHook}
+          />
+        )}
+        {view === "ideas" && (
+          <IdeasView
             growth={state.growth}
             setGrowth={setGrowth}
             onCreateCarousel={createCarouselFromHook}

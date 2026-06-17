@@ -7,7 +7,9 @@ import {
   toISO,
   todayISO,
 } from "../lib/dates";
+import { insertCustomDay, removeDay, type InsertPayload } from "../lib/plan";
 import DayModal from "./DayModal";
+import InsertDayModal from "./InsertDayModal";
 
 interface Props {
   growth: GrowthData;
@@ -53,6 +55,17 @@ export default function CalendarView({
   const { plan } = growth;
   const start = plan.startDate;
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [insertDate, setInsertDate] = useState<string | null>(null);
+
+  function doInsert(dateISO: string, payload: InsertPayload) {
+    setGrowth((g) => ({ ...g, plan: insertCustomDay(g.plan, dateISO, payload) }));
+    setInsertDate(null);
+  }
+
+  function deleteDay(id: string) {
+    setGrowth((g) => ({ ...g, plan: removeDay(g.plan, id) }));
+    setSelectedId(null);
+  }
 
   // Map ISO date -> day (date = startDate + offset).
   const { byDate, firstISO, lastISO } = useMemo(() => {
@@ -235,7 +248,7 @@ export default function CalendarView({
               return (
                 <div
                   key={iso}
-                  className={`min-h-24 border-b border-r border-slate-100 p-1.5 ${
+                  className={`group min-h-24 border-b border-r border-slate-100 p-1.5 ${
                     inMonth ? "" : "bg-slate-50/60"
                   }`}
                 >
@@ -251,18 +264,30 @@ export default function CalendarView({
                     >
                       {date.getDate()}
                     </span>
-                    {day && (
-                      <input
-                        type="checkbox"
-                        checked={day.done}
-                        onChange={(e) =>
-                          patchDay(day.id, { done: e.target.checked })
-                        }
-                        onClick={(e) => e.stopPropagation()}
-                        title="Mark done"
-                        className="h-3.5 w-3.5 accent-emerald-600"
-                      />
-                    )}
+                    <div className="flex items-center gap-1">
+                      {start && (
+                        <button
+                          type="button"
+                          onClick={() => setInsertDate(iso)}
+                          title="Insert a custom day here (pushes the plan forward)"
+                          className="rounded text-sm leading-none text-slate-300 opacity-0 transition hover:text-emerald-600 group-hover:opacity-100"
+                        >
+                          +
+                        </button>
+                      )}
+                      {day && (
+                        <input
+                          type="checkbox"
+                          checked={day.done}
+                          onChange={(e) =>
+                            patchDay(day.id, { done: e.target.checked })
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                          title="Mark done"
+                          className="h-3.5 w-3.5 accent-emerald-600"
+                        />
+                      )}
+                    </div>
                   </div>
 
                   {day && (
@@ -270,7 +295,9 @@ export default function CalendarView({
                       type="button"
                       onClick={() => setSelectedId(day.id)}
                       className={`w-full rounded-md border-l-4 bg-slate-50 p-1.5 text-left transition hover:bg-slate-100 ${
-                        PHASE_BORDER[day.phase] ?? "border-l-slate-300"
+                        day.isCustom
+                          ? "border-l-pink-400"
+                          : (PHASE_BORDER[day.phase] ?? "border-l-slate-300")
                       } ${
                         isToday ? "ring-2 ring-emerald-200" : ""
                       } ${day.done ? "opacity-50" : ""}`}
@@ -284,6 +311,11 @@ export default function CalendarView({
                         <span className="truncate text-[11px] font-medium uppercase tracking-wide text-slate-400">
                           {day.storiesOnly ? "Story" : day.format}
                         </span>
+                        {day.isCustom && (
+                          <span className="rounded bg-pink-100 px-1 text-[10px] font-medium text-pink-600">
+                            custom
+                          </span>
+                        )}
                         {day.isLeadMagnet && (
                           <span className="ml-auto text-[11px] text-amber-500">
                             ★
@@ -365,10 +397,19 @@ export default function CalendarView({
           isToday={daysFromToday(selectedISO) === 0}
           onClose={() => setSelectedId(null)}
           onPatch={(patch) => patchDay(selected.id, patch)}
+          onDelete={selected.isCustom ? () => deleteDay(selected.id) : undefined}
           onCreateCarousel={(text) => {
             onCreateCarousel(text);
             setSelectedId(null);
           }}
+        />
+      )}
+
+      {insertDate && (
+        <InsertDayModal
+          initialDate={insertDate}
+          onClose={() => setInsertDate(null)}
+          onSubmit={doInsert}
         />
       )}
     </div>

@@ -48,3 +48,10 @@ export function daysFromToday(iso: string): number {
   const b = parseISO(todayISO()).getTime();
   return Math.round((a - b) / 86400000);
 }
+
+/** Whole-day difference (bISO - aISO). */
+export function daysBetween(aISO: string, bISO: string): number {
+  return Math.round(
+    (parseISO(bISO).getTime() - parseISO(aISO).getTime()) / 86400000,
+  );
+}

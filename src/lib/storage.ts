@@ -21,6 +21,9 @@ function migrate(state: AppState): AppState {
     });
     state.growth.plan = fresh;
   }
+  if (!Array.isArray(state.growth.ideas)) {
+    state.growth.ideas = [];
+  }
   return state;
 }
 

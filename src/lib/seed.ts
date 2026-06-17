@@ -114,6 +114,7 @@ export function seedGrowth(): GrowthData {
   return {
     hooks,
     plan: seedPlan(),
+    ideas: [],
     leadMagnets: [
       {
         id: cheatId,

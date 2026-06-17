@@ -10,6 +10,7 @@ interface Props {
   onClose: () => void;
   onPatch: (patch: Partial<CalendarDay>) => void;
   onCreateCarousel: (text: string) => void;
+  onDelete?: () => void; // only for user-inserted custom days
 }
 
 const FORMAT_STYLE: Record<string, string> = {
@@ -54,6 +55,7 @@ export default function DayModal({
   onClose,
   onPatch,
   onCreateCarousel,
+  onDelete,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -98,7 +100,7 @@ export default function DayModal({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-xs font-semibold text-slate-700">
-                Day {day.day}
+                {day.isCustom ? "Custom post" : `Day ${day.day}`}
               </span>
               <span className="text-xs text-slate-400">· {niceDate}</span>
               {isToday && (
@@ -115,15 +117,23 @@ export default function DayModal({
               >
                 {day.storiesOnly ? "Story only" : day.format}
               </span>
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-                {day.pillar}
-              </span>
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-                {day.phase}
-              </span>
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-                Week {day.week}
-              </span>
+              {day.isCustom ? (
+                <span className="rounded bg-pink-100 px-1.5 py-0.5 text-xs font-medium text-pink-600">
+                  Custom
+                </span>
+              ) : (
+                <>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                    {day.pillar}
+                  </span>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                    {day.phase}
+                  </span>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                    Week {day.week}
+                  </span>
+                </>
+              )}
               {day.isLeadMagnet && (
                 <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">
                   Lead magnet
@@ -263,6 +273,19 @@ export default function DayModal({
                 tab → <strong>Paste</strong> mode → “Parse → preview”.
               </p>
             </div>
+          )}
+
+          {day.isCustom && onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Delete this custom day? The plan shifts back one day."))
+                  onDelete();
+              }}
+              className="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Delete custom day (pull plan back)
+            </button>
           )}
         </div>
       </div>

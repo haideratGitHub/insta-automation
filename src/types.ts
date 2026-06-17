@@ -92,6 +92,7 @@ export interface CalendarDay {
   hookId?: string; // optional link to a Hook in the bank
   isLeadMagnet?: boolean; // this day pushes a comment-trigger lead magnet
   storiesOnly?: boolean; // no main feed post (story-only day)
+  isCustom?: boolean; // user-inserted day (not from the 100-day plan)
   done: boolean;
 }
 
@@ -118,9 +119,17 @@ export interface CopySnippet {
   text: string;
 }
 
+export interface ContentIdea {
+  id: string;
+  text: string;
+  format: ContentFormat | "any"; // suggested format, or "any"
+  createdAt: number;
+}
+
 export interface GrowthData {
   hooks: Hook[];
   plan: ContentPlan;
+  ideas: ContentIdea[];
   leadMagnets: LeadMagnetIdea[];
   selectedLeadMagnetId: string;
   cheatSheet: ChecklistItem[]; // contents of the chosen resource
