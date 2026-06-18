@@ -20,6 +20,7 @@ export interface ValueSlide extends BaseSlide {
   imageDataUrl?: string; // optional chart screenshot, stored as a data URL
   showChart?: boolean; // reserve the chart frame; when off, text is centered.
   // Defaults to whether an image is present (see valueHasChart()).
+  imageFit?: "contain" | "cover"; // "contain" = show full image (default), "cover" = fill + crop
 }
 
 /** Whether a value slide should render its chart frame. */

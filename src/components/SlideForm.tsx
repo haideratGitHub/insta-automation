@@ -252,6 +252,28 @@ export default function SlideForm({
                   e.target.value = "";
                 }}
               />
+              {slide.imageDataUrl && (
+                <div className="mt-2 flex items-center gap-1.5">
+                  <span className="text-xs text-slate-400">Image:</span>
+                  {(["contain", "cover"] as const).map((fit) => {
+                    const active = (slide.imageFit ?? "contain") === fit;
+                    return (
+                      <button
+                        key={fit}
+                        type="button"
+                        onClick={() => onChange({ ...slide, imageFit: fit })}
+                        className={`rounded-md px-2 py-1 text-xs font-medium transition ${
+                          active
+                            ? "bg-slate-900 text-white"
+                            : "border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {fit === "contain" ? "Fit (show full)" : "Fill (crop)"}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               </div>
             )}
           </>
