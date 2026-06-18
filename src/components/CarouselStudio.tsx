@@ -74,7 +74,21 @@ export default function CarouselStudio({
 
   const setCaption = (caption: string) => onChange({ ...carousel, caption });
   const setHashtags = (hashtags: string) => onChange({ ...carousel, hashtags });
-  const replaceSlides = (slides: Slide[]) => onChange({ ...carousel, slides });
+
+  // Apply a parse result in ONE update — applying slides/caption/hashtags as
+  // separate onChange calls would each rebuild from the stale snapshot and
+  // clobber the others.
+  const applyParsed = (data: {
+    slides?: Slide[];
+    caption?: string;
+    hashtags?: string;
+  }) =>
+    onChange({
+      ...carousel,
+      ...(data.slides ? { slides: data.slides } : {}),
+      ...(data.caption !== undefined ? { caption: data.caption } : {}),
+      ...(data.hashtags !== undefined ? { hashtags: data.hashtags } : {}),
+    });
 
   // --- export -------------------------------------------------------------
   async function handleDownloadAll() {
@@ -174,7 +188,7 @@ export default function CarouselStudio({
             onMoveSlide={moveSlide}
             onSetCaption={setCaption}
             onSetHashtags={setHashtags}
-            onReplaceSlides={replaceSlides}
+            onApplyParsed={applyParsed}
           />
         </div>
 

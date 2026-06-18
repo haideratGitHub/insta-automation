@@ -29,12 +29,45 @@ export interface ParsedPaste {
  * When no marker is present, the first block defaults to a hook and the rest to
  * value slides.
  */
+const TAG_LINE = /^\s*\[(hook|value|cta|caption|hashtags)\]/i;
+const SEP_LINE = /^\s*-{3,}\s*$/;
+const FENCE_LINE = /^\s*```/;
+
+/**
+ * Split pasted text into blocks. Primarily splits on a `---` separator line,
+ * but ALSO starts a new block at every `[hook]/[value]/[cta]/[caption]/
+ * [hashtags]` tag line — so it still works when the `---` lines get stripped
+ * (e.g. copied from Claude's rendered markdown, where `---` renders as a rule).
+ * Code-fence lines (```) are ignored.
+ */
+function splitBlocks(input: string): string[] {
+  const lines = input.replace(/\r\n/g, "\n").split("\n");
+  const blocks: string[] = [];
+  let current: string[] = [];
+  const flush = () => {
+    const text = current.join("\n").trim();
+    if (text.length) blocks.push(text);
+    current = [];
+  };
+
+  for (const line of lines) {
+    if (FENCE_LINE.test(line)) continue;
+    if (SEP_LINE.test(line)) {
+      flush();
+      continue;
+    }
+    // a tag line starts a new block (unless the current block is still empty)
+    if (TAG_LINE.test(line) && current.some((l) => l.trim() !== "")) {
+      flush();
+    }
+    current.push(line);
+  }
+  flush();
+  return blocks;
+}
+
 export function parsePaste(input: string): ParsedPaste {
-  const blocks = input
-    .replace(/\r\n/g, "\n")
-    .split(/^\s*---\s*$/m)
-    .map((b) => b.trim())
-    .filter((b) => b.length > 0);
+  const blocks = splitBlocks(input);
 
   const slides: Slide[] = [];
   let caption: string | undefined;

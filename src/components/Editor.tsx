@@ -11,7 +11,11 @@ interface Props {
   onMoveSlide: (id: string, dir: -1 | 1) => void;
   onSetCaption: (caption: string) => void;
   onSetHashtags: (hashtags: string) => void;
-  onReplaceSlides: (slides: Slide[]) => void;
+  onApplyParsed: (data: {
+    slides?: Slide[];
+    caption?: string;
+    hashtags?: string;
+  }) => void;
 }
 
 const PASTE_EXAMPLE = `[hook]
@@ -45,7 +49,7 @@ export default function Editor({
   onMoveSlide,
   onSetCaption,
   onSetHashtags,
-  onReplaceSlides,
+  onApplyParsed,
 }: Props) {
   const [mode, setMode] = useState<"form" | "paste">("form");
   const [pasteText, setPasteText] = useState("");
@@ -61,9 +65,11 @@ export default function Editor({
       res.hashtags === undefined
     )
       return;
-    if (res.slides.length) onReplaceSlides(res.slides);
-    if (res.caption !== undefined) onSetCaption(res.caption);
-    if (res.hashtags !== undefined) onSetHashtags(res.hashtags);
+    onApplyParsed({
+      slides: res.slides.length ? res.slides : undefined,
+      caption: res.caption,
+      hashtags: res.hashtags,
+    });
     setMode("form");
   }
 
