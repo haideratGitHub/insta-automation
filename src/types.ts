@@ -127,10 +127,51 @@ export interface ContentIdea {
   createdAt: number;
 }
 
+// --- TikTok desk (parallel to the Instagram plan/ideas) --------------------
+
+export type TiktokAction = "repost" | "native" | "rest";
+
+export interface TiktokDay {
+  id: string;
+  offset: number; // 0-based day index within the plan
+  day: number; // 1-based plan day number
+  week: number;
+  phase: string;
+  weekdayLabel: string;
+  action: TiktokAction;
+  content: string; // working title / idea
+  note?: string; // how-to / brief
+  overlay?: string; // ops overlay note (warm-up / collab / convert / review)
+  customContent?: string; // user's extra angle for the script prompt
+  isCustom?: boolean;
+  done: boolean;
+}
+
+export interface TiktokPlan {
+  startDate: string | null;
+  days: TiktokDay[];
+}
+
+export type TiktokIdeaFormat = "any" | "native" | "repost";
+
+export interface TiktokIdea {
+  id: string;
+  text: string;
+  format: TiktokIdeaFormat;
+  createdAt: number;
+}
+
+export interface TiktokData {
+  plan: TiktokPlan;
+  ideas: TiktokIdea[];
+  rules: string[];
+}
+
 export interface GrowthData {
   hooks: Hook[];
   plan: ContentPlan;
   ideas: ContentIdea[];
+  tiktok: TiktokData;
   leadMagnets: LeadMagnetIdea[];
   selectedLeadMagnetId: string;
   cheatSheet: ChecklistItem[]; // contents of the chosen resource

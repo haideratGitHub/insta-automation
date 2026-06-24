@@ -1,4 +1,73 @@
-import type { CalendarDay } from "../types";
+import type { CalendarDay, TiktokDay } from "../types";
+
+const TIKTOK_ACTION_LABEL: Record<string, string> = {
+  repost: "Repost a clean (no-watermark) export of an existing breakdown",
+  native: "TikTok-native short — lean into a trend/sound, raw and fast",
+  rest: "Rest / engage / review day",
+};
+
+/**
+ * Build a Claude prompt for a TikTok day. Produces a ready-to-film short-form
+ * script (hook + beats + CTA), a caption, and a few hashtags.
+ */
+export function buildTiktokScriptPrompt(day: TiktokDay): string {
+  const content = (day.content || "").trim() || "(untitled)";
+  const note = (day.note || "").trim() || "(none)";
+  const overlay = (day.overlay || "").trim();
+  const phase = (day.phase || "").trim() || "(n/a)";
+  const actionLabel = TIKTOK_ACTION_LABEL[day.action] ?? day.action;
+  const custom =
+    (day.customContent || "").trim() ||
+    "(none — use your own expertise; research if it helps)";
+
+  return `You are a short-form video scriptwriter and order-flow trading educator writing for @hayeder.trades — a trader who trades NQ (Nasdaq-100 futures) using order flow and GEX (gamma exposure / options-dealer positioning), now growing on TikTok.
+
+AUDIENCE: retail futures & day traders on TikTok's For You feed, beginner→intermediate, fast scrollers.
+VOICE: punchy, plain English, confident, no hype. Talk like a real trader, not a guru.
+
+# TASK
+Write a ready-to-film TikTok script for the day below: a 1-second hook, a tight body, and a CTA — then a caption and hashtags. Total runtime ~15–40 seconds. Output plain text only (no markdown headers, no code fences).
+
+# THE DAY
+- Format: ${actionLabel}
+- Topic / working title: ${content}
+- How-to note: ${note}${overlay ? `\n- Ops note for today: ${overlay}` : ""}
+- Plan phase: ${phase}
+
+# MY CUSTOM ANGLE (build around this first)
+${custom}
+
+# RESEARCH
+If a concept would be sharper or more accurate with current info, do a quick web search (how dealer gamma hedging moves price, CVD/absorption/value-area basics, etc.). Keep claims correct and evergreen; don't invent specific price levels, dates, or P&L unless I gave them.
+
+# RULES
+- Hook (first 1 second / first line): a bold, specific, scroll-stopping line. No "in this video".
+- Keep one idea. Short spoken sentences. Concrete and visual — say what it looks like on the chart/tape.
+- If today is a "rest / engage / review" day, instead give me a 15-minute engagement + review checklist for the day (no script).
+- Warm-up phases: no links/promos; just teach and build trust.
+
+# OUTPUT (plain text, in this order)
+HOOK (0–1s):
+<one line>
+
+SCRIPT (spoken, ~15–40s):
+<3–6 short beats, one per line>
+
+ON-SCREEN TEXT:
+<2–4 short overlay captions to put on screen>
+
+CTA:
+<one line — follow / comment, matched to the phase>
+
+CAPTION:
+<1–2 lines for the TikTok caption>
+
+HASHTAGS:
+<8–15 lowercase hashtags, space-separated>
+
+SOUND IDEA:
+<one suggestion for the kind of trending sound/format to use>`;
+}
 
 /**
  * Build a Claude prompt for a carousel day. Pasting the prompt into Claude

@@ -10,20 +10,35 @@ import CalendarView from "./views/CalendarView";
 import IdeasView from "./views/IdeasView";
 import HooksView from "./views/HooksView";
 import LeadMagnetsView from "./views/LeadMagnetsView";
+import TiktokCalendarView from "./views/TiktokCalendarView";
+import TiktokIdeasView from "./views/TiktokIdeasView";
 
+type Platform = "instagram" | "tiktok";
 type View = "calendar" | "ideas" | "hooks" | "carousels" | "leadmagnets";
 
-const TABS: { id: View; label: string }[] = [
-  { id: "calendar", label: "Calendar" },
-  { id: "ideas", label: "Ideas" },
-  { id: "hooks", label: "Hooks" },
-  { id: "carousels", label: "Carousels" },
-  { id: "leadmagnets", label: "Lead magnets" },
-];
+const TABS: Record<Platform, { id: View; label: string }[]> = {
+  instagram: [
+    { id: "calendar", label: "Calendar" },
+    { id: "ideas", label: "Ideas" },
+    { id: "hooks", label: "Hooks" },
+    { id: "carousels", label: "Carousels" },
+    { id: "leadmagnets", label: "Lead magnets" },
+  ],
+  tiktok: [
+    { id: "calendar", label: "Calendar" },
+    { id: "ideas", label: "Ideas" },
+  ],
+};
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState() ?? seedAppState());
+  const [platform, setPlatform] = useState<Platform>("instagram");
   const [view, setView] = useState<View>("calendar");
+
+  function switchPlatform(p: Platform) {
+    setPlatform(p);
+    if (!TABS[p].some((t) => t.id === view)) setView("calendar");
+  }
 
   // Persistence: localStorage autosave + optional cloud sync.
   const sync = useSync(state, setState);
@@ -91,8 +106,27 @@ export default function App() {
             @hayeder.trades growth desk
           </span>
         </div>
+
+        {/* platform switcher */}
+        <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-0.5">
+          {(["instagram", "tiktok"] as Platform[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => switchPlatform(p)}
+              className={`rounded-md px-3 py-1 text-sm font-semibold transition ${
+                platform === p
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {p === "instagram" ? "Instagram" : "TikTok"}
+            </button>
+          ))}
+        </div>
+
         <nav className="flex items-center gap-1">
-          {TABS.map((t) => (
+          {TABS[platform].map((t) => (
             <button
               key={t.id}
               type="button"
@@ -114,21 +148,27 @@ export default function App() {
 
       {/* active view */}
       <main className="flex min-h-0 flex-1">
-        {view === "calendar" && (
+        {platform === "tiktok" && view === "calendar" && (
+          <TiktokCalendarView growth={state.growth} setGrowth={setGrowth} />
+        )}
+        {platform === "tiktok" && view === "ideas" && (
+          <TiktokIdeasView growth={state.growth} setGrowth={setGrowth} />
+        )}
+        {platform === "instagram" && view === "calendar" && (
           <CalendarView
             growth={state.growth}
             setGrowth={setGrowth}
             onCreateCarousel={createCarouselFromHook}
           />
         )}
-        {view === "ideas" && (
+        {platform === "instagram" && view === "ideas" && (
           <IdeasView
             growth={state.growth}
             setGrowth={setGrowth}
             onCreateCarousel={createCarouselFromHook}
           />
         )}
-        {view === "hooks" && (
+        {platform === "instagram" && view === "hooks" && (
           <HooksView
             growth={state.growth}
             setGrowth={setGrowth}

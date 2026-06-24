@@ -8,9 +8,14 @@ import type {
   Hook,
   Pillar,
   PillarId,
+  TiktokAction,
+  TiktokData,
+  TiktokDay,
+  TiktokPlan,
 } from "../types";
 import { genId } from "./id";
 import { CALENDAR_100 } from "./calendar100";
+import { TIKTOK_100 } from "./tiktok100";
 
 export const PILLARS: Pillar[] = [
   {
@@ -108,6 +113,44 @@ export function seedPlan(): ContentPlan {
   return { startDate: CALENDAR_100[0]?.date ?? null, days };
 }
 
+function mapTiktokAction(raw: string): TiktokAction {
+  const s = raw.toLowerCase();
+  if (s.startsWith("rest")) return "rest";
+  if (s.startsWith("tiktok-native")) return "native";
+  return "repost";
+}
+
+export function seedTiktokPlan(): TiktokPlan {
+  const days: TiktokDay[] = TIKTOK_100.map((r, i) => ({
+    id: genId(),
+    offset: i,
+    day: r.day,
+    week: r.week,
+    phase: r.phase,
+    weekdayLabel: r.weekday,
+    action: mapTiktokAction(r.action),
+    content: r.content,
+    note: r.note || undefined,
+    overlay: r.overlay || undefined,
+    done: false,
+  }));
+  return { startDate: TIKTOK_100[0]?.date ?? null, days };
+}
+
+export function seedTiktok(): TiktokData {
+  return {
+    plan: seedTiktokPlan(),
+    ideas: [],
+    rules: [
+      "Warm-up (first ~6 weeks): ~4 posts/week, NO links in bio or caption yet — build trust first.",
+      "Hook in the first 1 second; ride a trending sound on every post.",
+      "Reposts: use the clean iPhone export (no IG watermark) with a fresh TikTok caption.",
+      "Spend ~15 min/day commenting on niche creators; check Account Status for flags.",
+      "From P3 (~week 11) it's safe to add your bio link to IG / Discord.",
+    ],
+  };
+}
+
 export function seedGrowth(): GrowthData {
   const hooks = seedHooks();
   const cheatId = genId();
@@ -115,6 +158,7 @@ export function seedGrowth(): GrowthData {
     hooks,
     plan: seedPlan(),
     ideas: [],
+    tiktok: seedTiktok(),
     leadMagnets: [
       {
         id: cheatId,

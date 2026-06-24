@@ -1,6 +1,6 @@
 import type { AppState, Carousel } from "../types";
 import { genId } from "./id";
-import { seedGrowth, seedPlan } from "./seed";
+import { seedGrowth, seedPlan, seedTiktok, seedTiktokPlan } from "./seed";
 
 /**
  * Upgrade older saved state in place:
@@ -23,6 +23,18 @@ function migrate(state: AppState): AppState {
   }
   if (!Array.isArray(state.growth.ideas)) {
     state.growth.ideas = [];
+  }
+  // backfill / refresh the TikTok desk
+  if (!state.growth.tiktok || !state.growth.tiktok.plan) {
+    state.growth.tiktok = seedTiktok();
+  } else if (
+    state.growth.tiktok.plan.days?.length !== 100 ||
+    !(state.growth.tiktok.plan.days[0] && "action" in state.growth.tiktok.plan.days[0])
+  ) {
+    state.growth.tiktok.plan = seedTiktokPlan();
+    if (!Array.isArray(state.growth.tiktok.ideas)) state.growth.tiktok.ideas = [];
+    if (!Array.isArray(state.growth.tiktok.rules))
+      state.growth.tiktok.rules = seedTiktok().rules;
   }
   return state;
 }
